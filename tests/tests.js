@@ -61,7 +61,6 @@ describe('pricing', () => {
       }
       const price = pricing.calculateLTDPrice(products.longTermDisability, employee, selectedOptions)
 
-
       expect(price).to.equal(0)
     })
   })
