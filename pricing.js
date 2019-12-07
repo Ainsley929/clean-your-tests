@@ -55,6 +55,7 @@ function calculateLTDPrice(product, employee, selectedOptions) {
   return price
 }
 
+
 function calculateProductPrice(product, employee, selectedOptions) {
   let price
   let employerContribution
