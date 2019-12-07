@@ -1,4 +1,3 @@
-const { expect } = require('chai')
 const chai = require('chai')
 const { describe, it, beforeEach, afterEach } = require('mocha')
 const employee = require('./employee')
@@ -7,8 +6,8 @@ const pricing = require('../pricing')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 
-
 chai.use(sinonChai)
+const { expect } = chai
 
 describe('pricing', () => {
   describe('formatPrice', () => {
@@ -80,6 +79,24 @@ describe(' calculateLTDPrice', () => {
     expect(price).to.equal(32.04)
   })
 })
+describe('calculateCommuterProductsPrice', () => {
+  it('returns the price of selected(parking) commuter product without employer contribution', () => {
+    const selectedOptions = {
+      benefits: 'parking'
+    }
+    const price = pricing.calculateCommuterProductsPrice(products.commuter, selectedOptions)
+
+    expect(price).to.equal(250)
+  })
+  it('returns the price of selected(train) commuter product without employer contribution', () => {
+    const selectedOptions = {
+      benefits: 'train'
+    }
+    const price = pricing.calculateCommuterProductsPrice(products.commuter, selectedOptions)
+
+    expect(price).to.equal(84.75)
+  })
+})
 
 describe('calculateProductPrice', () => {
   let sandbox
@@ -89,6 +106,7 @@ describe('calculateProductPrice', () => {
   let calculateVolLifePricePerRoleSpy
   let calculateVolLifePriceSpy
   let calculateLTDPriceSpy
+  let calculateCommuterProductsPriceSpy
 
   beforeEach(() => {
     sandbox = sinon.createSandbox()
@@ -99,11 +117,34 @@ describe('calculateProductPrice', () => {
     calculateVolLifePricePerRoleSpy = sandbox.spy(pricing, 'calculateVolLifePricePerRole')
     calculateVolLifePriceSpy = sandbox.spy(pricing, 'calculateVolLifePrice')
     calculateLTDPriceSpy = sandbox.spy(pricing, 'calculateLTDPrice')
+    calculateCommuterProductsPriceSpy = sandbox.spy(pricing, 'calculateCommuterProductsPrice')
   })
 
   afterEach(() => {
     sandbox.restore()
 
+  })
+  it('returns the price of selected(parking) commuter product without employer contribution', () => {
+    const selectedOptions = {
+      benefits: 'parking'
+    }
+    const price = pricing.calculateCommuterProductsPrice(products.commuter, selectedOptions)
+
+    expect(price).to.equal(250)
+    expect(formatPriceSpy).to.have.callCount(1)
+    expect(getEmployerContributionSpy).to.have.callCount(1)
+    expect(calculateCommuterProductsPriceSpy).to.have.callCount(1)
+  })
+  it('returns the price of selected(train) commuter product without employer contribution', () => {
+    const selectedOptions = {
+      benefits: 'train'
+    }
+    const price = pricing.calculateCommuterProductsPrice(products.commuter, selectedOptions)
+
+    expect(price).to.equal(84.75)
+    expect(formatPriceSpy).to.have.callCount(1)
+    expect(getEmployerContributionSpy).to.have.callCount(1)
+    expect(calculateCommuterProductsPriceSpy).to.have.callCount(1)
   })
 
   it('returns the price for a voluntary life product for a single employee', () => {
