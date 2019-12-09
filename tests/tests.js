@@ -74,31 +74,27 @@ describe(' calculateLTDPrice', () => {
       familyMembersToCover: ['ee'],
       coverageLevel: [{ role: 'ee', coverage: 125000 }]
     }
-    const price = pricing.calculateLTDPrice(products.longTermDisability, employee, selectedOptions)
+    const price = pricing.calculateLTDPrice(products.longTermDisability, selectedOptions, employee)
 
     expect(price).to.equal(32.04)
   })
 })
-describe('calculateCommuterProductsPrice', () => {
+describe('calculateCommuterCost', () => {
   it('returns the price of selected(parking) commuter product without employer contribution', () => {
-    const selectedOptions = {
-      benefits: 'parking'
-    }
-    const price = pricing.calculateCommuterProductsPrice(products.commuter, selectedOptions)
+    const selectedOptions = { benefits: 'parking' }
+    const price = pricing.calculateCommuterCost(products.commuter, selectedOptions)
 
     expect(price).to.equal(250)
   })
   it('returns the price of selected(train) commuter product without employer contribution', () => {
-    const selectedOptions = {
-      benefits: 'train'
-    }
-    const price = pricing.calculateCommuterProductsPrice(products.commuter, selectedOptions)
+    const selectedOptions = { benefits: 'train' }
+    const price = pricing.calculateCommuterCost(products.commuter, selectedOptions)
 
     expect(price).to.equal(84.75)
   })
 })
 
-describe('calculateProductPrice', () => {
+describe('calculateProductsPrice', () => {
   let sandbox
   let calculateProductPriceSpy
   let formatPriceSpy
@@ -106,7 +102,7 @@ describe('calculateProductPrice', () => {
   let calculateVolLifePricePerRoleSpy
   let calculateVolLifePriceSpy
   let calculateLTDPriceSpy
-  let calculateCommuterProductsPriceSpy
+  let calculateCommuterCostSpy
 
   beforeEach(() => {
     sandbox = sinon.createSandbox()
@@ -117,34 +113,30 @@ describe('calculateProductPrice', () => {
     calculateVolLifePricePerRoleSpy = sandbox.spy(pricing, 'calculateVolLifePricePerRole')
     calculateVolLifePriceSpy = sandbox.spy(pricing, 'calculateVolLifePrice')
     calculateLTDPriceSpy = sandbox.spy(pricing, 'calculateLTDPrice')
-    calculateCommuterProductsPriceSpy = sandbox.spy(pricing, 'calculateCommuterProductsPrice')
+    calculateCommuterCostSpy = sandbox.spy(pricing, 'calculateCommuterCost')
   })
 
   afterEach(() => {
     sandbox.restore()
 
   })
-  it('returns the price of selected(parking) commuter product without employer contribution', () => {
-    const selectedOptions = {
-      benefits: 'parking'
-    }
-    const price = pricing.calculateCommuterProductsPrice(products.commuter, selectedOptions)
+  it('returns the price of selected(parking) commuter product with contribution', () => {
+    const selectedOptions = { benefits: 'parking' }
+    const price = pricing.calculateProductPrice(products.commuter, selectedOptions)
 
-    expect(price).to.equal(250)
+    expect(price).to.equal(175)
     expect(formatPriceSpy).to.have.callCount(1)
     expect(getEmployerContributionSpy).to.have.callCount(1)
-    expect(calculateCommuterProductsPriceSpy).to.have.callCount(1)
+    expect(calculateCommuterCostSpy).to.have.callCount(1)
   })
-  it('returns the price of selected(train) commuter product without employer contribution', () => {
-    const selectedOptions = {
-      benefits: 'train'
-    }
-    const price = pricing.calculateCommuterProductsPrice(products.commuter, selectedOptions)
+  it('returns the price of selected(train) commuter product with employer contribution', () => {
+    const selectedOptions = { benefits: 'train' }
+    const price = pricing.calculateProductPrice(products.commuter, selectedOptions)
 
-    expect(price).to.equal(84.75)
+    expect(price).to.equal(9.75)
     expect(formatPriceSpy).to.have.callCount(1)
     expect(getEmployerContributionSpy).to.have.callCount(1)
-    expect(calculateCommuterProductsPriceSpy).to.have.callCount(1)
+    expect(calculateCommuterCostSpy).to.have.callCount(1)
   })
 
   it('returns the price for a voluntary life product for a single employee', () => {
@@ -152,7 +144,7 @@ describe('calculateProductPrice', () => {
       familyMembersToCover: ['ee'],
       coverageLevel: [{ role: 'ee', coverage: 125000 }],
     }
-    const price = pricing.calculateProductPrice(products.voluntaryLife, employee, selectedOptions)
+    const price = pricing.calculateProductPrice(products.voluntaryLife, selectedOptions, employee)
 
 
     expect(price).to.equal(39.37)
@@ -170,7 +162,7 @@ describe('calculateProductPrice', () => {
         { role: 'sp', coverage: 75000 },
       ],
     }
-    const price = pricing.calculateProductPrice(products.voluntaryLife, employee, selectedOptions)
+    const price = pricing.calculateProductPrice(products.voluntaryLife, selectedOptions, employee)
 
     expect(price).to.equal(71.09)
     expect(calculateVolLifePricePerRoleSpy).to.have.callCount(2)
@@ -183,7 +175,7 @@ describe('calculateProductPrice', () => {
     const selectedOptions = {
       familyMembersToCover: ['ee']
     }
-    const price = pricing.calculateProductPrice(products.longTermDisability, employee, selectedOptions)
+    const price = pricing.calculateProductPrice(products.longTermDisability, selectedOptions, employee)
 
     expect(price).to.equal(22.04)
     expect(calculateLTDPriceSpy).to.have.callCount(1)
