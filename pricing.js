@@ -28,13 +28,13 @@ function calculateVolLifePrice(product, selectedOptions) {
   const { familyMembersToCover } = selectedOptions
 
   familyMembersToCover.forEach((role) => {
-    price += calculateVolLifePricePerRole(role, selectedOptions.coverageLevel, product.costs)
+    price += this.calculateVolLifePricePerRole(role, selectedOptions.coverageLevel, product.costs)
   })
 
   return price
 }
 
-function calculateLTDPrice(product, employee, selectedOptions) {
+function calculateLTDPrice(product, selectedOptions, employee) {
   var price = 0
   const { familyMembersToCover } = selectedOptions
 
@@ -55,22 +55,52 @@ function calculateLTDPrice(product, employee, selectedOptions) {
   return price
 }
 
-function calculateProductPrice(product, employee, selectedOptions) {
+function calculateCommuterCost(product, selectedOptions) {
+  let price = 0
+
+  if (selectedOptions.benefits === 'parking') {
+
+    return price += 250
+
+  }
+  else {
+    price += 84.75
+
+    return price
+  }
+}
+
+function calculateProductPrice(product, selectedOptions, employee) {
   let price
   let employerContribution
 
+
   switch (product.type) {
+    case 'commuter':
+      price = this.calculateCommuterCost(product, selectedOptions)
+      employerContribution = this.getEmployerContribution(product.employerContribution, price)
+      return this.formatPrice(price - employerContribution)
     case 'volLife':
-      price = calculateVolLifePrice(product, selectedOptions)
-      employerContribution = getEmployerContribution(product.employerContribution, price)
-      return formatPrice(price - employerContribution)
+      price = this.calculateVolLifePrice(product, selectedOptions)
+      employerContribution = this.getEmployerContribution(product.employerContribution, price)
+      return this.formatPrice(price - employerContribution)
     case 'ltd':
-      price = calculateLTDPrice(product, employee, selectedOptions)
-      employerContribution = getEmployerContribution(product.employerContribution, price)
-      return formatPrice(price - employerContribution)
+      price = this.calculateLTDPrice(product, selectedOptions, employee)
+      employerContribution = this.getEmployerContribution(product.employerContribution, price)
+      return this.formatPrice(price - employerContribution)
+
     default:
       throw new Error(`Unknown product type: ${product.type}`)
   }
 }
 
-module.exports = { calculateProductPrice }
+module.exports = {
+  calculateProductPrice,
+  formatPrice,
+  getEmployerContribution,
+  calculateVolLifePricePerRole,
+  calculateVolLifePrice,
+  calculateLTDPrice,
+  calculateCommuterCost,
+}
+
